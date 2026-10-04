@@ -8,6 +8,10 @@ log ""
 export CI=1
 run_cmd pnpm --filter immich install
 
+log "Building Sharp against system libvips"
+run_cmd env SHARP_FORCE_GLOBAL_LIBVIPS=true pnpm --config.verify-deps-before-run=false \
+    --dir "${IMMICH_WORKSPACE}/server/node_modules/sharp" exec npm run build || exit 1
+
 log "Starting Nest API Server"
 log ""
 cd "${IMMICH_WORKSPACE}/server" || (

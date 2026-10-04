@@ -7,6 +7,7 @@ import {
   mapPublicConfig,
   mapUserConfig,
 } from 'src/dtos/config.dto.js';
+import { ImageBitDepth, ImageFormat } from 'src/enum.js';
 import { getKeysDeep } from 'src/utils/misc.js';
 
 const PUBLIC_PROPERTIES = [
@@ -37,6 +38,22 @@ describe('config visibility', () => {
 
   it('should accept the defaults with the admin schema', () => {
     expect(AdminConfigDto.schema.safeParse(defaults)).toEqual(expect.objectContaining({ success: true }));
+  });
+
+  it('should accept 10-bit AVIF generated images', () => {
+    const config = structuredClone(defaults);
+    config.image.thumbnail.format = ImageFormat.Avif;
+    config.image.thumbnail.bitDepth = ImageBitDepth.Ten;
+
+    expect(AdminConfigDto.schema.safeParse(config)).toEqual(expect.objectContaining({ success: true }));
+  });
+
+  it.each([ImageFormat.Jpeg, ImageFormat.Webp])('should reject 10-bit %s generated images', (format) => {
+    const config = structuredClone(defaults);
+    config.image.thumbnail.format = format;
+    config.image.thumbnail.bitDepth = ImageBitDepth.Ten;
+
+    expect(AdminConfigDto.schema.safeParse(config)).toEqual(expect.objectContaining({ success: false }));
   });
 
   it('should map the defaults onto the user and public schemas', () => {

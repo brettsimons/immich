@@ -303,14 +303,14 @@ export class MediaService extends BaseService {
       fileType: AssetFileType.Preview,
       format: previewFormat,
       isEdited: useEdits,
-      isProgressive: !!image.preview.progressive && previewFormat !== ImageFormat.Webp,
+      isProgressive: !!image.preview.progressive && previewFormat === ImageFormat.Jpeg,
       isTransparent,
     });
     const thumbnailFile = this.getImageFile(asset, {
       fileType: AssetFileType.Thumbnail,
       format: thumbnailFormat,
       isEdited: useEdits,
-      isProgressive: !!image.thumbnail.progressive && thumbnailFormat !== ImageFormat.Webp,
+      isProgressive: !!image.thumbnail.progressive && thumbnailFormat === ImageFormat.Jpeg,
       isTransparent,
     });
     this.storageCore.ensureFolders(previewFile.path);
@@ -318,8 +318,20 @@ export class MediaService extends BaseService {
     // generate final images
     const decoded = { data, info };
     const baseOptions = { colorspace, processInvalidImages: false, edits: useEdits ? asset.edits : [] };
-    const thumbnailOptions = { ...image.thumbnail, ...baseOptions, format: thumbnailFormat };
-    const previewOptions = { ...image.preview, ...baseOptions, format: previewFormat };
+    const { bitDepth: thumbnailBitDepth, ...thumbnailConfig } = image.thumbnail;
+    const { bitDepth: previewBitDepth, ...previewConfig } = image.preview;
+    const thumbnailOptions = {
+      ...thumbnailConfig,
+      ...baseOptions,
+      format: thumbnailFormat,
+      ...(thumbnailFormat === ImageFormat.Avif ? { bitDepth: thumbnailBitDepth } : {}),
+    };
+    const previewOptions = {
+      ...previewConfig,
+      ...baseOptions,
+      format: previewFormat,
+      ...(previewFormat === ImageFormat.Avif ? { bitDepth: previewBitDepth } : {}),
+    };
     const promises = [
       this.mediaRepository.generateThumbhash(decoded, baseOptions),
       this.mediaRepository.generateThumbnail(decoded, thumbnailOptions, thumbnailFile.path),
@@ -335,7 +347,7 @@ export class MediaService extends BaseService {
         fileType: AssetFileType.FullSize,
         format: fullsizeFormat,
         isEdited: useEdits,
-        isProgressive: !!image.fullsize.progressive && fullsizeFormat !== ImageFormat.Webp,
+        isProgressive: !!image.fullsize.progressive && fullsizeFormat === ImageFormat.Jpeg,
         isTransparent,
       });
       const fullsizeOptions = {
@@ -343,6 +355,7 @@ export class MediaService extends BaseService {
         format: fullsizeFormat,
         quality: image.fullsize.quality,
         progressive: image.fullsize.progressive,
+        ...(fullsizeFormat === ImageFormat.Avif ? { bitDepth: image.fullsize.bitDepth } : {}),
       };
       promises.push(this.mediaRepository.generateThumbnail(decoded, fullsizeOptions, fullsizeFile.path));
     } else if (generateFullsize && extracted && extracted.format === RawExtractedFormat.Jpeg) {
@@ -350,7 +363,7 @@ export class MediaService extends BaseService {
         fileType: AssetFileType.FullSize,
         format: extracted.format,
         isEdited: false,
-        isProgressive: !!image.fullsize.progressive && image.fullsize.format !== ImageFormat.Webp,
+        isProgressive: !!image.fullsize.progressive && image.fullsize.format === ImageFormat.Jpeg,
         isTransparent,
       });
       this.storageCore.ensureFolders(fullsizeFile.path);

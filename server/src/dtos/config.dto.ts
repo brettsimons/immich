@@ -13,6 +13,8 @@ import {
   ConfigVisibility,
   HlsVideoResolution,
   HlsVideoResolutionSchema,
+  ImageBitDepth,
+  ImageBitDepthSchema,
   ImageFormat,
   ImageFormatSchema,
   LogLevel,
@@ -81,13 +83,27 @@ const AdminConfigMachineLearningModelSchema = AdminConfigMachineLearningTaskSche
   modelName: z.string().describe('Name of the model to use'),
 });
 
-const AdminConfigGeneratedImageSchema = z
+const GeneratedImageSchema = z
   .object({
     format: ImageFormatSchema,
     quality: z.int().min(1).max(100).describe('Quality'),
-    size: z.int().min(1).describe('Size').meta({ visibility: User }),
+    bitDepth: ImageBitDepthSchema.default(ImageBitDepth.Eight),
     progressive: configBool.default(false).optional().describe('Progressive'),
   })
+  .superRefine((value, ctx) => {
+    if (value.bitDepth === ImageBitDepth.Ten && value.format !== ImageFormat.Avif) {
+      ctx.addIssue({
+        code: 'custom',
+        message: '10-bit output is only supported for AVIF images',
+        path: ['bitDepth'],
+        input: value.bitDepth,
+      });
+    }
+  });
+
+const AdminConfigGeneratedImageSchema = GeneratedImageSchema.safeExtend({
+  size: z.int().min(1).describe('Size').meta({ visibility: User }),
+})
   .meta({ id: 'AdminConfigGeneratedImageDto' });
 
 const AdminConfigFFmpegSchema = z
@@ -336,13 +352,9 @@ const AdminConfigSchemaWithVisibility = z
       .object({
         thumbnail: AdminConfigGeneratedImageSchema,
         preview: AdminConfigGeneratedImageSchema,
-        fullsize: z
-          .object({
-            enabled: configBool.describe('Enabled').meta({ visibility: User }),
-            format: ImageFormatSchema,
-            quality: z.int().min(1).max(100).describe('Quality'),
-            progressive: configBool.default(false).optional().describe('Progressive'),
-          })
+        fullsize: GeneratedImageSchema.safeExtend({
+          enabled: configBool.describe('Enabled').meta({ visibility: User }),
+        })
           .meta({ id: 'AdminConfigGeneratedFullsizeImageDto' }),
         colorspace: ColorspaceSchema,
         extractEmbedded: configBool.describe('Extract embedded'),
@@ -697,12 +709,14 @@ export const defaults = Object.freeze<SystemConfig>({
       format: ImageFormat.Webp,
       size: 250,
       quality: 80,
+      bitDepth: ImageBitDepth.Eight,
       progressive: false,
     },
     preview: {
       format: ImageFormat.Jpeg,
       size: 1440,
       quality: 80,
+      bitDepth: ImageBitDepth.Eight,
       progressive: false,
     },
     colorspace: Colorspace.P3,
@@ -711,6 +725,7 @@ export const defaults = Object.freeze<SystemConfig>({
       enabled: false,
       format: ImageFormat.Jpeg,
       quality: 80,
+      bitDepth: ImageBitDepth.Eight,
       progressive: false,
     },
   },

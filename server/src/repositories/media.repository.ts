@@ -33,6 +33,7 @@ import {
   DvSignalCompatibility,
   H264Profile,
   HevcProfile,
+  ImageFormat,
   LogLevel,
   RawExtractedFormat,
 } from 'src/enum.js';
@@ -180,14 +181,25 @@ export class MediaRepository {
 
   async generateThumbnail(image: Bitmap, options: GenerateThumbnailOptions, output: string): Promise<void> {
     const transformed = await this.transform(image, options);
-    await this.tag(transformed, options.colorspace)
-      .toFormat(options.format, {
-        quality: options.quality,
-        // this is default in libvips (except the threshold is 90), but we need to set it manually in sharp
-        chromaSubsampling: options.quality >= 80 ? '4:4:4' : '4:2:0',
-        progressive: options.progressive,
-      })
-      .toFile(output);
+    const pipeline = this.tag(transformed, options.colorspace);
+    const chromaSubsampling = options.quality >= 80 ? '4:4:4' : '4:2:0';
+
+    switch (options.format) {
+      case ImageFormat.Avif: {
+        pipeline.avif({ quality: options.quality, bitdepth: options.bitDepth ?? 8, chromaSubsampling });
+        break;
+      }
+      case ImageFormat.Jpeg: {
+        pipeline.jpeg({ quality: options.quality, chromaSubsampling, progressive: options.progressive });
+        break;
+      }
+      case ImageFormat.Webp: {
+        pipeline.webp({ quality: options.quality });
+        break;
+      }
+    }
+
+    await pipeline.toFile(output);
   }
 
   private getImageDecodingPipeline(input: string | Buffer, options: DecodeToBufferOptions) {

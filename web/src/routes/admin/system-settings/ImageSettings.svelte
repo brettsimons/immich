@@ -1,6 +1,6 @@
 <script lang="ts">
   import SettingSelect from './SettingSelect.svelte';
-  import { Colorspace, ImageFormat } from '@immich/sdk';
+  import { Colorspace, ImageBitDepth, ImageFormat } from '@immich/sdk';
   import { fade } from 'svelte/transition';
 
   import SettingAccordion from '$lib/components/shared-components/settings/SettingAccordion.svelte';
@@ -31,6 +31,7 @@
             desc={$t('admin.image_format_description')}
             bind:value={configToEdit.image.thumbnail.format}
             options={[
+              { value: ImageFormat.Avif, text: 'AVIF' },
               { value: ImageFormat.Jpeg, text: 'JPEG' },
               { value: ImageFormat.Webp, text: 'WebP' },
             ]}
@@ -38,11 +39,31 @@
             isEdited={configToEdit.image.thumbnail.format !== config.image.thumbnail.format}
             {disabled}
             onSelect={(value) => {
-              if (value === ImageFormat.Webp) {
+              if (value !== ImageFormat.Jpeg) {
                 configToEdit.image.thumbnail.progressive = false;
               }
+              configToEdit.image.thumbnail.bitDepth =
+                value === ImageFormat.Avif
+                  ? (configToEdit.image.thumbnail.bitDepth ?? ImageBitDepth.Eight)
+                  : ImageBitDepth.Eight;
             }}
           />
+
+          {#if configToEdit.image.thumbnail.format === ImageFormat.Avif}
+            <SettingSelect
+              label={$t('admin.image_bit_depth')}
+              desc={$t('admin.image_bit_depth_description')}
+              number
+              bind:value={configToEdit.image.thumbnail.bitDepth}
+              options={[
+                { value: ImageBitDepth.Eight, text: '8-bit' },
+                { value: ImageBitDepth.Ten, text: '10-bit' },
+              ]}
+              name="thumbnail-bit-depth"
+              isEdited={configToEdit.image.thumbnail.bitDepth !== config.image.thumbnail.bitDepth}
+              {disabled}
+            />
+          {/if}
 
           <SettingSelect
             label={$t('admin.image_resolution')}
@@ -76,7 +97,7 @@
             checked={configToEdit.image.thumbnail.progressive}
             onToggle={(isChecked) => (configToEdit.image.thumbnail.progressive = isChecked)}
             isEdited={configToEdit.image.thumbnail.progressive !== config.image.thumbnail.progressive}
-            disabled={disabled || configToEdit.image.thumbnail.format === ImageFormat.Webp}
+            disabled={disabled || configToEdit.image.thumbnail.format !== ImageFormat.Jpeg}
           />
         </SettingAccordion>
 
@@ -90,6 +111,7 @@
             desc={$t('admin.image_format_description')}
             bind:value={configToEdit.image.preview.format}
             options={[
+              { value: ImageFormat.Avif, text: 'AVIF' },
               { value: ImageFormat.Jpeg, text: 'JPEG' },
               { value: ImageFormat.Webp, text: 'WebP' },
             ]}
@@ -97,11 +119,31 @@
             isEdited={configToEdit.image.preview.format !== config.image.preview.format}
             {disabled}
             onSelect={(value) => {
-              if (value === ImageFormat.Webp) {
+              if (value !== ImageFormat.Jpeg) {
                 configToEdit.image.preview.progressive = false;
               }
+              configToEdit.image.preview.bitDepth =
+                value === ImageFormat.Avif
+                  ? (configToEdit.image.preview.bitDepth ?? ImageBitDepth.Eight)
+                  : ImageBitDepth.Eight;
             }}
           />
+
+          {#if configToEdit.image.preview.format === ImageFormat.Avif}
+            <SettingSelect
+              label={$t('admin.image_bit_depth')}
+              desc={$t('admin.image_bit_depth_description')}
+              number
+              bind:value={configToEdit.image.preview.bitDepth}
+              options={[
+                { value: ImageBitDepth.Eight, text: '8-bit' },
+                { value: ImageBitDepth.Ten, text: '10-bit' },
+              ]}
+              name="preview-bit-depth"
+              isEdited={configToEdit.image.preview.bitDepth !== config.image.preview.bitDepth}
+              {disabled}
+            />
+          {/if}
 
           <SettingSelect
             label={$t('admin.image_resolution')}
@@ -134,7 +176,7 @@
             checked={configToEdit.image.preview.progressive}
             onToggle={(isChecked) => (configToEdit.image.preview.progressive = isChecked)}
             isEdited={configToEdit.image.preview.progressive !== config.image.preview.progressive}
-            disabled={disabled || configToEdit.image.preview.format === ImageFormat.Webp}
+            disabled={disabled || configToEdit.image.preview.format !== ImageFormat.Jpeg}
           />
         </SettingAccordion>
 
@@ -159,6 +201,7 @@
             desc={$t('admin.image_format_description')}
             bind:value={configToEdit.image.fullsize.format}
             options={[
+              { value: ImageFormat.Avif, text: 'AVIF' },
               { value: ImageFormat.Jpeg, text: 'JPEG' },
               { value: ImageFormat.Webp, text: 'WebP' },
             ]}
@@ -166,11 +209,31 @@
             isEdited={configToEdit.image.fullsize.format !== config.image.fullsize.format}
             disabled={disabled || !configToEdit.image.fullsize.enabled}
             onSelect={(value) => {
-              if (value === ImageFormat.Webp) {
+              if (value !== ImageFormat.Jpeg) {
                 configToEdit.image.fullsize.progressive = false;
               }
+              configToEdit.image.fullsize.bitDepth =
+                value === ImageFormat.Avif
+                  ? (configToEdit.image.fullsize.bitDepth ?? ImageBitDepth.Eight)
+                  : ImageBitDepth.Eight;
             }}
           />
+
+          {#if configToEdit.image.fullsize.format === ImageFormat.Avif}
+            <SettingSelect
+              label={$t('admin.image_bit_depth')}
+              desc={$t('admin.image_bit_depth_description')}
+              number
+              bind:value={configToEdit.image.fullsize.bitDepth}
+              options={[
+                { value: ImageBitDepth.Eight, text: '8-bit' },
+                { value: ImageBitDepth.Ten, text: '10-bit' },
+              ]}
+              name="fullsize-bit-depth"
+              isEdited={configToEdit.image.fullsize.bitDepth !== config.image.fullsize.bitDepth}
+              disabled={disabled || !configToEdit.image.fullsize.enabled}
+            />
+          {/if}
 
           <SettingInputField
             inputType={SettingInputFieldType.NUMBER}
@@ -189,7 +252,7 @@
             isEdited={configToEdit.image.fullsize.progressive !== config.image.fullsize.progressive}
             disabled={disabled ||
               !configToEdit.image.fullsize.enabled ||
-              configToEdit.image.fullsize.format === ImageFormat.Webp}
+              configToEdit.image.fullsize.format !== ImageFormat.Jpeg}
           />
         </SettingAccordion>
 

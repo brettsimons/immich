@@ -31,7 +31,7 @@ By default Immich creates 3 thumbnails for each asset,
 Blurred (thumbhash) , Small - thumbnails (webp) , and Large - previews (jpeg/webp), using these settings you can change the quality for the thumbnails and previews files that are created.
 
 **Thumbnail format**  
-Allows you to choose the type of format you want for the Thumbnail images, Webp produces smaller files than jpeg, but is slower to encode.
+Allows you to choose the format for thumbnail images. WebP and AVIF usually produce smaller files than JPEG, but take longer to encode. AVIF support, especially for HDR images, varies by browser and device.
 
 :::tip
 You can read in detail about the advantages and disadvantages of using webp over jpeg on [Adobe's website](https://www.adobe.com/creativecloud/file-types/image/raster/webp-file.html)
@@ -41,13 +41,18 @@ You can read in detail about the advantages and disadvantages of using webp over
 Used when viewing groups of photos (main timeline, album view, etc.). Higher resolutions can preserve more detail but take longer to encode, have larger file sizes, and can reduce app responsiveness.
 
 **Preview format**  
-Allows you to choose the type of format you want for the Preview images, Webp produces smaller files than jpeg, but is slower to encode.
+Allows you to choose the format for preview images. The selected format is served directly to clients, so verify that your browsers and mobile devices support it.
 
 **Preview resolution**  
 Used when viewing a single photo and for machine learning. Higher resolutions can preserve more detail but take longer to encode, have larger file sizes, and can reduce app responsiveness.
 
 **Quality**  
 Image quality from 1-100. Higher is better for quality but produces larger files, this option affects the Preview and Thumbnail images.
+
+**Bit depth**
+AVIF images can be generated at 8-bit or 10-bit depth. Use 10-bit for HDR-capable source images. Bit depth alone does not make an image HDR; the source must also contain HDR color and transfer metadata that the image processing pipeline can preserve.
+
+After changing the format or bit depth, run the thumbnail generation job for all assets to replace existing thumbnail, preview, and generated full-size files. Changing the setting does not re-encode existing files automatically.
 
 **Prefer wide gamut**  
 Use Display P3 for thumbnails. This better preserves the vibrance of images with wide colorspaces, but images may appear differently on old devices with an old browser version. sRGB images are kept as sRGB to avoid color shifts.

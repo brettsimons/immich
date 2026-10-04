@@ -20,6 +20,7 @@ import {
   ExifOrientation,
   H264Profile,
   HevcProfile,
+  ImageBitDepth,
   ImageFormat,
   IntegrityReport,
   JobName,
@@ -46,6 +47,7 @@ export type RepositoryInterface<T extends object> = Pick<T, keyof T>;
 export type FullsizeImageOptions = {
   format: ImageFormat;
   quality: number;
+  bitDepth: ImageBitDepth;
   enabled: boolean;
   progressive?: boolean;
 };
@@ -53,6 +55,7 @@ export type FullsizeImageOptions = {
 export type ImageOptions = {
   format: ImageFormat;
   quality: number;
+  bitDepth: ImageBitDepth;
   size: number;
   progressive?: boolean;
 };
@@ -85,6 +88,7 @@ export type TransformOptions = {
 };
 
 export type GenerateThumbnailOptions = Pick<ImageOptions, 'format' | 'quality' | 'progressive'> &
+  Partial<Pick<ImageOptions, 'bitDepth'>> &
   ImageColorOptions &
   TransformOptions;
 export type GenerateThumbhashOptions = ImageColorOptions & Pick<TransformOptions, 'edits'>;

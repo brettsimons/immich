@@ -18863,6 +18863,10 @@
       },
       "AdminConfigGeneratedFullsizeImageDto": {
         "properties": {
+          "bitDepth": {
+            "$ref": "#/components/schemas/ImageBitDepth",
+            "default": 8
+          },
           "enabled": {
             "description": "Enabled",
             "type": "boolean"
@@ -18890,6 +18894,10 @@
       },
       "AdminConfigGeneratedImageDto": {
         "properties": {
+          "bitDepth": {
+            "$ref": "#/components/schemas/ImageBitDepth",
+            "default": 8
+          },
           "format": {
             "$ref": "#/components/schemas/ImageFormat"
           },
@@ -22643,9 +22651,18 @@
         },
         "type": "object"
       },
+      "ImageBitDepth": {
+        "description": "Image bit depth",
+        "enum": [
+          8,
+          10
+        ],
+        "type": "integer"
+      },
       "ImageFormat": {
         "description": "Image format",
         "enum": [
+          "avif",
           "jpeg",
           "webp"
         ],

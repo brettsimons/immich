@@ -12,6 +12,7 @@ import {
   AssetVisibility,
   AudioCodec,
   Colorspace,
+  ImageBitDepth,
   ExifOrientation,
   ImageFormat,
   JobName,
@@ -723,6 +724,7 @@ describe(MediaService.name, () => {
           format,
           size: 1440,
           quality: 80,
+          ...(format === ImageFormat.Avif ? { bitDepth: ImageBitDepth.Eight } : {}),
           progressive: false,
           processInvalidImages: false,
           edits: [],
@@ -784,6 +786,7 @@ describe(MediaService.name, () => {
           format,
           size: 250,
           quality: 80,
+          ...(format === ImageFormat.Avif ? { bitDepth: ImageBitDepth.Eight } : {}),
           progressive: false,
           processInvalidImages: false,
           edits: [],
@@ -1282,9 +1285,16 @@ describe(MediaService.name, () => {
       expect(mocks.media.copyTagGroup).toHaveBeenCalledWith('XMP-GPano', asset.originalPath, expect.any(String));
     });
 
-    it('should respect encoding options when generating full-size preview', async () => {
+    it('should respect AVIF encoding options when generating full-size preview', async () => {
       mocks.systemMetadata.get.mockResolvedValue({
-        image: { fullsize: { enabled: true, format: ImageFormat.Webp, quality: 90 } },
+        image: {
+          fullsize: {
+            enabled: true,
+            format: ImageFormat.Avif,
+            quality: 90,
+            bitDepth: ImageBitDepth.Ten,
+          },
+        },
       });
       mocks.media.extract.mockResolvedValue({ buffer: extractedBuffer, format: RawExtractedFormat.Jpeg });
       mocks.media.getImageMetadata.mockResolvedValue({ width: 3840, height: 2160, isTransparent: false });
@@ -1311,13 +1321,14 @@ describe(MediaService.name, () => {
         { data: rawBuffer, info: rawInfo },
         {
           colorspace: Colorspace.P3,
-          format: ImageFormat.Webp,
+          format: ImageFormat.Avif,
           quality: 90,
+          bitDepth: ImageBitDepth.Ten,
           progressive: false,
           processInvalidImages: false,
           edits: [],
         },
-        expect.any(String),
+        expect.stringContaining('fullsize.avif'),
       );
     });
 

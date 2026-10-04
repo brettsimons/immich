@@ -597,7 +597,18 @@ export enum Colorspace {
 
 export const ColorspaceSchema = z.enum(Colorspace).describe('Colorspace').meta({ id: 'Colorspace' });
 
+export enum ImageBitDepth {
+  Eight = 8,
+  Ten = 10,
+}
+
+export const ImageBitDepthSchema = z
+  .enum(ImageBitDepth)
+  .describe('Image bit depth')
+  .meta({ id: 'ImageBitDepth', type: 'integer' });
+
 export enum ImageFormat {
+  Avif = 'avif',
   Jpeg = 'jpeg',
   Webp = 'webp',
 }

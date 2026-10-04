@@ -113,6 +113,7 @@ export type AdminConfigFFmpegDto = {
     twoPass: boolean;
 };
 export type AdminConfigGeneratedFullsizeImageDto = {
+    bitDepth?: ImageBitDepth;
     /** Enabled */
     enabled: boolean;
     format: ImageFormat;
@@ -122,6 +123,7 @@ export type AdminConfigGeneratedFullsizeImageDto = {
     quality: number;
 };
 export type AdminConfigGeneratedImageDto = {
+    bitDepth?: ImageBitDepth;
     format: ImageFormat;
     /** Progressive */
     progressive?: boolean;
@@ -7997,7 +7999,12 @@ export enum Colorspace {
     Srgb = "srgb",
     P3 = "p3"
 }
+export enum ImageBitDepth {
+    Eight = 8,
+    Ten = 10
+}
 export enum ImageFormat {
+    Avif = "avif",
     Jpeg = "jpeg",
     Webp = "webp"
 }

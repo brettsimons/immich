@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import sharp from 'sharp';
 import { AssetEditAction, MirrorAxis } from 'src/dtos/editing.dto.js';
-import { Colorspace, ImageFormat } from 'src/enum.js';
+import { Colorspace, ImageBitDepth, ImageFormat } from 'src/enum.js';
 import { LoggingRepository } from 'src/repositories/logging.repository.js';
 import { MediaRepository } from 'src/repositories/media.repository.js';
 import { automock } from 'test/utils.js';
@@ -336,6 +336,31 @@ describe(MediaRepository.name, () => {
       );
 
       expect(statSync(file).blksize).toBeGreaterThan(0);
+    });
+
+    it.each([ImageBitDepth.Eight, ImageBitDepth.Ten])('should generate a decodable %s-bit AVIF image', async (bitDepth) => {
+      const input = await sharp({
+        create: { width: 64, height: 64, channels: 3, background: { r: 255, g: 0, b: 0 } },
+      })
+        .png()
+        .toBuffer();
+      const dir = mkdtempDisposableSync(join(tmpdir(), 'media-repository-'));
+      const file = join(dir.path, 'test.avif');
+      const decoded = await sut.decodeImage(input, { colorspace: Colorspace.P3, processInvalidImages: false });
+
+      await sut.generateThumbnail(
+        decoded,
+        {
+          colorspace: Colorspace.P3,
+          quality: 80,
+          bitDepth,
+          format: ImageFormat.Avif,
+          processInvalidImages: false,
+        },
+        file,
+      );
+
+      expect(await sharp(file).metadata()).toEqual(expect.objectContaining({ format: 'heif', width: 64, height: 64 }));
     });
   });
 });
